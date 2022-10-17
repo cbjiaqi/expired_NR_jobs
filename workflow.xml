@@ -1,0 +1,71 @@
+<workflow-app name="check-expired-NR-Rec-jobs-dev" xmlns="uri:oozie:workflow:0.4">
+  <credentials>
+    <credential name="hcat" type="cbhcat">
+      <property>
+        <name>hcat.metastore.uri</name>
+        <value>${metastoreUri}</value>
+      </property>
+    </credential>
+  </credentials>
+
+  <start to="get_api_response_jobs"/>
+
+    <action cred="hcat" name = "get_api_response_jobs">
+        <sub-workflow>
+            <app-path>${HdfsRoot}/get_api_response_jobs/workflow_get_api.xml</app-path>
+            <propagate-configuration />
+        </sub-workflow>
+        <ok to ="check_expired_jobs" />
+        <error to ="fail" />
+    </action>
+
+
+    <action cred="hcat" name = "check_expired_jobs">
+        <sub-workflow>
+            <app-path>${HdfsRoot}/check_expired_jobs/workflow_check_jobs.xml</app-path>
+            <propagate-configuration />
+        </sub-workflow>
+        <ok to ="send-email-stats" />
+        <error to ="fail" />
+    </action>
+
+    <action cred="hcat" name="send-email-stats">
+        <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>spark2-submit</exec>
+            <argument>email_expired_NR_jobs.py</argument>
+            <argument>--db</argument>
+            <argument>${db}</argument>
+            <argument>--email</argument>
+            <argument>${email}</argument>
+            <file>email_expired_NR_jobs.py</file>
+        </shell>
+        <ok to="success"/>
+        <error to="fail"/>
+    </action>
+
+
+   <action cred="hcat" name="success">
+        <email xmlns="uri:oozie:email-action:0.2">
+            <to>${email}</to>
+            <subject>[${wf:name()}] successfully completed Email Rec US </subject>
+            <body>[${wf:name()}] successfully completed..Lets Celebrate</body>
+        </email>
+        <ok to="end"/>
+        <error to="kill"/>
+    </action>
+    <action cred="hcat" name="fail">
+        <email xmlns="uri:oozie:email-action:0.2">
+            <to>${email}</to>
+            <subject>[${wf:name()}] has failed  Email Rec US </subject>
+            <body>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</body>
+        </email>
+        <ok to="kill"/>
+        <error to="kill"/>
+    </action>
+    <kill name="kill">
+        <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <end name="end"/>
+</workflow-app>

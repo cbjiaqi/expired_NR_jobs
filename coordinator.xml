@@ -1,0 +1,13 @@
+<coordinator-app name="check-expired-NR-Rec-jobs-dev" frequency="${coord:hours(2)}" start="${start_date}" end="2100-03-17T11:00Z" timezone="America/New_York"  xmlns="uri:oozie:coordinator:0.1">
+	<controls>
+        <timeout>15</timeout>
+        <concurrency>1</concurrency>
+        <execution>FIFO</execution>
+    </controls>
+    <action>
+      	<workflow>
+      		<!-- this should point to the job XML file -->
+        	<app-path>${HdfsRoot}/workflow.xml</app-path>
+      	</workflow>
+    </action>
+</coordinator-app>

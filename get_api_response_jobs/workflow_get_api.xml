@@ -1,0 +1,221 @@
+<workflow-app name="Expired-NR-Jobs-Get-API-Response" xmlns="uri:oozie:workflow:0.4">
+
+    <credentials>
+        <credential name="hcat" type="cbhcat">
+            <property>
+                <name>hcat.metastore.uri</name>
+                <value>${metastoreUri}</value>
+            </property>
+        </credential>
+    </credentials>
+
+    <start to="get_api_response_fork"/>
+
+    <fork name = "get_api_response_fork">
+        <path start="get_api_response_GBR_SCALE_TEN" />
+        <path start="get_api_response_GBR_MIX_A" />
+        <path start="get_api_response_GBR_MIX_B" />
+        <path start="get_api_response_GBR_MIX_C" />
+    </fork>
+
+    <action name="get_api_response_GBR_SCALE_TEN" cred="hcat">
+       <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapreduce.map.memory.mb</name>
+                    <value>4096</value>
+                </property>
+            </configuration>
+            <exec>spark2-submit</exec>
+            <argument>--executor-cores</argument>
+            <argument>4</argument>
+            <argument>--executor-memory</argument>
+            <argument>3g</argument>
+            <argument>--driver-cores</argument>
+            <argument>4</argument>
+            <argument>--driver-memory</argument>
+            <argument>4g</argument>
+            <argument>--num-executors</argument>
+            <argument>50</argument>
+            <argument>--conf</argument>
+            <argument>spark.dynamicAllocation.enabled=false</argument>
+            <argument>--conf</argument>
+            <argument>spark.dynamicAllocation.maxExecutors=50</argument>
+            <argument>--conf</argument>
+            <argument>spark.executor.memoryOverhead=4096</argument>
+            <argument>--conf</argument>
+            <argument>spark.yarn.queue=${queue}</argument>
+            <argument>--conf</argument>
+            <argument>spark.yarn.maxAppAttempts=2</argument>
+            <argument>--conf</argument>
+            <argument>spark.sql.shuffle.partitions=200</argument>
+            <argument>get_api_response.py</argument>
+            <argument>--db</argument>
+            <argument>${db}</argument>
+            <argument>--algorithm</argument>
+            <argument>GBR_SCALE_TEN</argument>
+            <file>get_api_response.py</file>
+       </shell>
+        <ok to="join_api_response"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="get_api_response_GBR_MIX_A" cred="hcat">
+       <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapreduce.map.memory.mb</name>
+                    <value>4096</value>
+                </property>
+            </configuration>
+            <exec>spark2-submit</exec>
+            <argument>--executor-cores</argument>
+            <argument>4</argument>
+            <argument>--executor-memory</argument>
+            <argument>3g</argument>
+            <argument>--driver-cores</argument>
+            <argument>4</argument>
+            <argument>--driver-memory</argument>
+            <argument>4g</argument>
+            <argument>--num-executors</argument>
+            <argument>50</argument>
+            <argument>--conf</argument>
+            <argument>spark.dynamicAllocation.enabled=false</argument>
+            <argument>--conf</argument>
+            <argument>spark.dynamicAllocation.maxExecutors=50</argument>
+            <argument>--conf</argument>
+            <argument>spark.executor.memoryOverhead=4096</argument>
+            <argument>--conf</argument>
+            <argument>spark.yarn.queue=${queue}</argument>
+            <argument>--conf</argument>
+            <argument>spark.yarn.maxAppAttempts=2</argument>
+            <argument>--conf</argument>
+            <argument>spark.sql.shuffle.partitions=200</argument>
+            <argument>get_api_response.py</argument>
+            <argument>--db</argument>
+            <argument>${db}</argument>
+            <argument>--algorithm</argument>
+            <argument>GBR_MIX_A</argument>
+            <file>get_api_response.py</file>
+       </shell>
+        <ok to="join_api_response"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="get_api_response_GBR_MIX_B" cred="hcat">
+       <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapreduce.map.memory.mb</name>
+                    <value>4096</value>
+                </property>
+            </configuration>
+            <exec>spark2-submit</exec>
+            <argument>--executor-cores</argument>
+            <argument>4</argument>
+            <argument>--executor-memory</argument>
+            <argument>3g</argument>
+            <argument>--driver-cores</argument>
+            <argument>4</argument>
+            <argument>--driver-memory</argument>
+            <argument>4g</argument>
+            <argument>--num-executors</argument>
+            <argument>50</argument>
+            <argument>--conf</argument>
+            <argument>spark.dynamicAllocation.enabled=false</argument>
+            <argument>--conf</argument>
+            <argument>spark.dynamicAllocation.maxExecutors=50</argument>
+            <argument>--conf</argument>
+            <argument>spark.executor.memoryOverhead=4096</argument>
+            <argument>--conf</argument>
+            <argument>spark.yarn.queue=${queue}</argument>
+            <argument>--conf</argument>
+            <argument>spark.yarn.maxAppAttempts=2</argument>
+            <argument>--conf</argument>
+            <argument>spark.sql.shuffle.partitions=200</argument>
+            <argument>get_api_response.py</argument>
+            <argument>--db</argument>
+            <argument>${db}</argument>
+            <argument>--algorithm</argument>
+            <argument>GBR_MIX_B</argument>
+            <file>get_api_response.py</file>
+       </shell>
+        <ok to="join_api_response"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="get_api_response_GBR_MIX_C" cred="hcat">
+       <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapreduce.map.memory.mb</name>
+                    <value>4096</value>
+                </property>
+            </configuration>
+            <exec>spark2-submit</exec>
+            <argument>--executor-cores</argument>
+            <argument>4</argument>
+            <argument>--executor-memory</argument>
+            <argument>3g</argument>
+            <argument>--driver-cores</argument>
+            <argument>4</argument>
+            <argument>--driver-memory</argument>
+            <argument>4g</argument>
+            <argument>--num-executors</argument>
+            <argument>50</argument>
+            <argument>--conf</argument>
+            <argument>spark.dynamicAllocation.enabled=false</argument>
+            <argument>--conf</argument>
+            <argument>spark.dynamicAllocation.maxExecutors=50</argument>
+            <argument>--conf</argument>
+            <argument>spark.executor.memoryOverhead=4096</argument>
+            <argument>--conf</argument>
+            <argument>spark.yarn.queue=${queue}</argument>
+            <argument>--conf</argument>
+            <argument>spark.yarn.maxAppAttempts=2</argument>
+            <argument>--conf</argument>
+            <argument>spark.sql.shuffle.partitions=200</argument>
+            <argument>get_api_response.py</argument>
+            <argument>--db</argument>
+            <argument>${db}</argument>
+            <argument>--algorithm</argument>
+            <argument>GBR_MIX_C</argument>
+            <file>get_api_response.py</file>
+       </shell>
+        <ok to="join_api_response"/>
+        <error to="fail"/>
+    </action>
+
+    <join name = "join_api_response" to="success" />
+
+    <action cred="hcat" name="success">
+        <email xmlns="uri:oozie:email-action:0.2">
+            <to>${email}</to>
+            <subject>[${wf:name()}] successfully completed</subject>
+            <body>[${wf:name()}] successfully completed.</body>
+        </email>
+        <ok to="end"/>
+        <error to="kill"/>
+    </action>
+    <action cred="hcat" name="fail">
+        <email xmlns="uri:oozie:email-action:0.2">
+            <to>${email}</to>
+            <subject>[${wf:name()}] has failed</subject>
+            <body>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</body>
+        </email>
+        <ok to="kill"/>
+        <error to="kill"/>
+    </action>
+    <kill name="kill">
+        <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <end name="end"/>
+</workflow-app>

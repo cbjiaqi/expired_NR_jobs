@@ -1,0 +1,133 @@
+<workflow-app name="Expired-NR-Jobs-Check-vs-Hive" xmlns="uri:oozie:workflow:0.4">
+
+    <credentials>
+        <credential name="hcat" type="cbhcat">
+            <property>
+                <name>hcat.metastore.uri</name>
+                <value>${metastoreUri}</value>
+            </property>
+        </credential>
+    </credentials>
+
+    <start to="check_nr_rec_jobs_fork"/>
+
+    <fork name = "check_nr_rec_jobs_fork">
+        <path start="check_nr_rec_jobs_GBR_SCALE_TEN" />
+        <path start="check_nr_rec_jobs_GBR_MIX_A" />
+        <path start="check_nr_rec_jobs_GBR_MIX_B" />
+        <path start="check_nr_rec_jobs_GBR_MIX_C" />
+    </fork>
+
+    <action name="check_nr_rec_jobs_GBR_SCALE_TEN" cred="hcat">
+        <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>RunHQL2.py</exec>
+            <argument>-f</argument>
+            <argument>check_expired_jobs.sql</argument>
+            <argument>-t</argument>
+            <argument>${email}</argument>
+            <argument>-r</argument>
+            <argument>2</argument>
+            <argument>-c</argument>
+            <argument>${RunHQLCred}</argument>
+            <argument>-a</argument>
+            <argument>db=${db},table_end=gbr_scale_ten,queue=${queue}</argument>
+            <argument>-e</argument>
+            <file>check_expired_jobs.sql</file><file>RunHQL2.py</file>
+        </shell>
+        <ok to="join_check_nr_rec_jobs"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="check_nr_rec_jobs_GBR_MIX_A" cred="hcat">
+        <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>RunHQL2.py</exec>
+            <argument>-f</argument>
+            <argument>check_expired_jobs.sql</argument>
+            <argument>-t</argument>
+            <argument>${email}</argument>
+            <argument>-r</argument>
+            <argument>2</argument>
+            <argument>-c</argument>
+            <argument>${RunHQLCred}</argument>
+            <argument>-a</argument>
+            <argument>db=${db},table_end=gbr_mix_A,queue=${queue}</argument>
+            <argument>-e</argument>
+            <file>check_expired_jobs.sql</file><file>RunHQL2.py</file>
+        </shell>
+        <ok to="join_check_nr_rec_jobs"/>
+        <error to="fail"/>
+    </action>
+
+     <action name="check_nr_rec_jobs_GBR_MIX_B" cred="hcat">
+        <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>RunHQL2.py</exec>
+            <argument>-f</argument>
+            <argument>check_expired_jobs.sql</argument>
+            <argument>-t</argument>
+            <argument>${email}</argument>
+            <argument>-r</argument>
+            <argument>2</argument>
+            <argument>-c</argument>
+            <argument>${RunHQLCred}</argument>
+            <argument>-a</argument>
+            <argument>db=${db},table_end=gbr_mix_B,queue=${queue}</argument>
+            <argument>-e</argument>
+            <file>check_expired_jobs.sql</file><file>RunHQL2.py</file>
+        </shell>
+        <ok to="join_check_nr_rec_jobs"/>
+        <error to="fail"/>
+    </action>
+
+     <action name="check_nr_rec_jobs_GBR_MIX_C" cred="hcat">
+        <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>RunHQL2.py</exec>
+            <argument>-f</argument>
+            <argument>check_expired_jobs.sql</argument>
+            <argument>-t</argument>
+            <argument>${email}</argument>
+            <argument>-r</argument>
+            <argument>2</argument>
+            <argument>-c</argument>
+            <argument>${RunHQLCred}</argument>
+            <argument>-a</argument>
+            <argument>db=${db},table_end=gbr_mix_C,queue=${queue}</argument>
+            <argument>-e</argument>
+            <file>check_expired_jobs.sql</file><file>RunHQL2.py</file>
+        </shell>
+        <ok to="join_check_nr_rec_jobs"/>
+        <error to="fail"/>
+    </action>
+
+
+    <join name = "join_check_nr_rec_jobs" to="success" />
+    <action cred="hcat" name="success">
+        <email xmlns="uri:oozie:email-action:0.2">
+            <to>${email}</to>
+            <subject>[${wf:name()}] successfully completed</subject>
+            <body>[${wf:name()}] successfully completed.</body>
+        </email>
+        <ok to="end"/>
+        <error to="kill"/>
+    </action>
+    <action cred="hcat" name="fail">
+        <email xmlns="uri:oozie:email-action:0.2">
+            <to>${email}</to>
+            <subject>[${wf:name()}] has failed</subject>
+            <body>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</body>
+        </email>
+        <ok to="kill"/>
+        <error to="kill"/>
+    </action>
+    <kill name="kill">
+        <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <end name="end"/>
+</workflow-app>
