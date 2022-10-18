@@ -53,7 +53,7 @@ def nrql(key, account_id, algorithm='GBR_SCALE_TEN'):
 
     #query2 = """and timestamp>'""" + str(timestamp_id) + """' """
 
-    query3 = """' SINCE 2 hours ago \
+    query3 = """' SINCE 2 days ago \
           limit 2000")
           {results
             queryProgress {
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     sparkDF.write.saveAsTable('''{}.{}'''.format(db, destn_tbl))
 
     #loop
-    for i in range(40):
+    for i in range(30):
         #src_jobs_cur, rec_jobs_cur, send_time_cur = get_results_resonse()
         rec_jobs_cur, send_time_cur = get_results_resonse()
         #columns = ['srcjob_id', 'recjob_id', 'send_time']

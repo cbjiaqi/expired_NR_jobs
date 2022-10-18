@@ -12,7 +12,8 @@
 
     <action cred="hcat" name = "get_api_response_jobs">
         <sub-workflow>
-            <app-path>${HdfsRoot}/get_api_response_jobs/workflow_get_api.xml</app-path>
+            <!--<app-path>${HdfsRoot}/get_api_response_jobs/workflow_get_api.xml</app-path>-->
+            <app-path>${HdfsRoot}/get_api_response_jobs/workflow_get_api_old.xml</app-path>
             <propagate-configuration />
         </sub-workflow>
         <ok to ="check_expired_jobs" />
@@ -34,12 +35,14 @@
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
             <exec>spark2-submit</exec>
-            <argument>email_expired_NR_jobs.py</argument>
+            <!--<argument>email_expired_NR_jobs.py</argument>-->
+            <argument>email_expired_NR_jobs_old.py</argument>
             <argument>--db</argument>
             <argument>${db}</argument>
             <argument>--email</argument>
             <argument>${email}</argument>
-            <file>email_expired_NR_jobs.py</file>
+            <!--<file>email_expired_NR_jobs.py</file>-->
+            <file>email_expired_NR_jobs_old.py</file>
         </shell>
         <ok to="success"/>
         <error to="fail"/>
