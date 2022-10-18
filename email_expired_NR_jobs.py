@@ -59,7 +59,7 @@ select total_rec_jobs, expired_rec_jobs, round(expired_rec_jobs/total_rec_jobs*1
 t1,t2
 """
 df = sqlContext.sql(sql).toPandas()
-email_text = html_part_data('2 hours example for expired rate for NR jobs, GBR SCALE TEN', df)
+email_text = html_part_data('expired rate for NR jobs, GBR SCALE TEN, 2 hours example', df)
 
 sql = f"""
 with t1 as 
@@ -70,7 +70,7 @@ select total_rec_jobs, expired_rec_jobs, round(expired_rec_jobs/total_rec_jobs*1
 t1,t2
 """
 df = sqlContext.sql(sql).toPandas()
-email_text += html_part_data('2 hours example for expired rate for NR jobs, GBR MIX A', df)
+email_text += html_part_data('expired rate for NR jobs, GBR MIX A, 2 hours example', df)
 
 sql = f"""
 with t1 as 
@@ -81,7 +81,7 @@ select total_rec_jobs, expired_rec_jobs, round(expired_rec_jobs/total_rec_jobs*1
 t1,t2
 """
 df = sqlContext.sql(sql).toPandas()
-email_text += html_part_data('2 hours example for expired rate for NR jobs, GBR MIX B', df)
+email_text += html_part_data('expired rate for NR jobs, GBR MIX B, 2 hours example', df)
 
 sql = f"""
 with t1 as 
@@ -92,7 +92,7 @@ select total_rec_jobs, expired_rec_jobs, round(expired_rec_jobs/total_rec_jobs*1
 t1,t2
 """
 df = sqlContext.sql(sql).toPandas()
-email_text += html_part_data('2 hours example for expired rate for NR jobs, GBR MIX C', df)
+email_text += html_part_data('expired rate for NR jobs, GBR MIX C, 2 hours example', df)
 
 sql = f"""
 select * from {db}.qqq_check_rec_jobs_new_relic_gbr_scale_ten

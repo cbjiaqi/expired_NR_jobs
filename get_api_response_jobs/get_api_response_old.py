@@ -36,7 +36,7 @@ Account_Id = api_key.Account_Id
 API_KEY = api_key.API_KEY
 
 #define nrql
-def nrql(key, account_id, algorithm='GBR_SCALE_TEN', timestamp_id=None):
+def nrql(key, account_id, algorithm='GBR_SCALE_TEN'):
   # Query Builder
     #request_id = '[ed59d470-d431-4d33-8168-b0bc20c53713]'
     #print(type(request_id))
@@ -44,17 +44,17 @@ def nrql(key, account_id, algorithm='GBR_SCALE_TEN', timestamp_id=None):
         actor { account(id:"""+str(account_id)+""") 
           { nrql
           (query: "SELECT jobID as src_job, tuple(`Job Id's in Recs Response Data-0`, `Job Id's in Recs Response Data-1`,\
-          `Job Id's in Recs Response Data-2`,`Job Id's in Recs Response Data-3`) as rec_jobs, timestamp, `request.headers.request-id` \
+          `Job Id's in Recs Response Data-2`,`Job Id's in Recs Response Data-3`) as rec_jobs, timestamp \
           FROM Transaction WHERE appName= 'JobRecommendationUS' and \
           name like 'WebTransaction/RestWebService/consumer/recommendations/platform (POST)' \
           and Algorithm='"""
 
     query2 = str(algorithm)
 
-    query2_2 = """' and timestamp>'""" + str(timestamp_id)
+    #query2 = """and timestamp>'""" + str(timestamp_id) + """' """
 
     query3 = """' SINCE 2 hours ago \
-          order by `request.headers.request-id` limit 2000")
+          limit 2000")
           {results
             queryProgress {
                queryId
@@ -67,12 +67,7 @@ def nrql(key, account_id, algorithm='GBR_SCALE_TEN', timestamp_id=None):
         }
     }
     }"""
-
-    if timestamp_id is None:
-      query = query1+query2+query3
-    else:
-        query = query1+query2+query2_2+query3
-
+    query = query1+query2+query3
     #print(query)
     endpoint = "https://api.newrelic.com/graphql"
     headers = {'API-Key': key}
@@ -86,16 +81,14 @@ def nrql(key, account_id, algorithm='GBR_SCALE_TEN', timestamp_id=None):
     else:
         raise Exception(f'Query failed with a {response.status_code}.')
 
-def get_results_resonse(timestamp_id):
+def get_results_resonse():
     #src_jobs_cur = []
     rec_jobs_cur = []
     send_time_cur = []
-    timestamp_id_lst = None
     try:
-        results_response = nrql(API_KEY, Account_Id, algorithm, timestamp_id)
+        results_response = nrql(API_KEY, Account_Id, algorithm)
         m = len(results_response)
         if m > 0:
-            timestamp_id_lst = results_response[m-1]['request.headers.request-id']
             for j in range(m):
                 rec_jobs = list(filter(None, results_response[j]['rec_jobs']))
                 n = len(rec_jobs)
@@ -110,16 +103,15 @@ def get_results_resonse(timestamp_id):
                         rec_jobs_cur = rec_jobs_cur + rec_jobs
                         send_time_cur = send_time_cur + send_time
         #return src_jobs_cur, rec_jobs_cur, send_time_cur
-        return rec_jobs_cur, send_time_cur, timestamp_id_lst
+        return rec_jobs_cur, send_time_cur
     except Exception as e:
         #return src_jobs_cur, rec_jobs_cur, send_time_cur
-        return rec_jobs_cur, send_time_cur, timestamp_id_lst
+        return rec_jobs_cur, send_time_cur
 
 
 if __name__ == "__main__":
-
     #initial
-    rec_jobs_cur, send_time_cur, timestamp_id_lst = get_results_resonse(timestamp_id=None)
+    rec_jobs_cur, send_time_cur = get_results_resonse()
     # columns = ['srcjob_id', 'recjob_id', 'send_time']
     columns = ['recjob_id', 'send_time']
     # sparkDF = spark.createDataFrame(zip(src_jobs_cur, rec_jobs_cur, send_time_cur), columns)
@@ -132,9 +124,9 @@ if __name__ == "__main__":
     sparkDF.write.saveAsTable('''{}.{}'''.format(db, destn_tbl))
 
     #loop
-    for i in range(19):
+    for i in range(40):
         #src_jobs_cur, rec_jobs_cur, send_time_cur = get_results_resonse()
-        rec_jobs_cur, send_time_cur, timestamp_id_lst = get_results_resonse(timestamp_id_lst)
+        rec_jobs_cur, send_time_cur = get_results_resonse()
         #columns = ['srcjob_id', 'recjob_id', 'send_time']
         columns = ['recjob_id', 'send_time']
         if len(rec_jobs_cur)>0:
@@ -142,10 +134,10 @@ if __name__ == "__main__":
             sparkDF = spark.createDataFrame(zip(rec_jobs_cur, send_time_cur), columns)
             sparkDF = sparkDF.dropDuplicates()
 
-            #destn_tbl1 = f"dataservices_test.qqq_get_rec_jobs_new_relic_tmp"
-            #spark.sql(f"drop table if exists {destn_tbl1}")
+            # destn_tbl1 = f"dataservices_test.qqq_get_rec_jobs_new_relic_tmp"
+            # spark.sql(f"drop table if exists {destn_tbl1}")
             destn_tbl1 = "qqq_get_rec_jobs_new_relic_tmp" + algorithm
             spark.sql('''drop table if exists {}.{}'''.format(db, destn_tbl1))
             sparkDF.write.saveAsTable('''{}.{}'''.format(db, destn_tbl1))
-            #spark.sql(f"insert overwrite table {destn_tbl} select * from {destn_tbl1}")
+            # spark.sql(f"insert overwrite table {destn_tbl} select * from {destn_tbl1}")
             spark.sql('''insert overwrite table {}.{} select * from {}.{}'''.format(db, destn_tbl, db, destn_tbl1))
