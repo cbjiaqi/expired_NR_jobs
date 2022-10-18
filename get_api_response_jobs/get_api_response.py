@@ -82,7 +82,7 @@ def nrql(key, account_id, algorithm='GBR_SCALE_TEN'):
         raise Exception(f'Query failed with a {response.status_code}.')
 
 def get_results_resonse():
-    src_jobs_cur = []
+    #src_jobs_cur = []
     rec_jobs_cur = []
     send_time_cur = []
     try:
@@ -97,25 +97,30 @@ def get_results_resonse():
                     rec_jobs = [item for elem in rec_jobs for item in elem]
                     k = len(rec_jobs)
                     if k > 0:
-                        src_jobs = [results_response[j]['src_job']] * k
+                        #src_jobs = [results_response[j]['src_job']] * k
                         send_time = [datetime.fromtimestamp(results_response[j]['timestamp'] / 1000.0)] * k
-                        src_jobs_cur = src_jobs_cur + src_jobs
+                        #src_jobs_cur = src_jobs_cur + src_jobs
                         rec_jobs_cur = rec_jobs_cur + rec_jobs
                         send_time_cur = send_time_cur + send_time
-        return src_jobs_cur, rec_jobs_cur, send_time_cur
+        #return src_jobs_cur, rec_jobs_cur, send_time_cur
+        return rec_jobs_cur, send_time_cur
     except Exception as e:
-        return src_jobs_cur, rec_jobs_cur, send_time_cur
+        #return src_jobs_cur, rec_jobs_cur, send_time_cur
+        return rec_jobs_cur, send_time_cur
 
 
 if __name__ == "__main__":
 
-    src_jobs_all = []
+    #src_jobs_all = []
     rec_jobs_all = []
     send_time_all = []
     for i in range(20):
-        src_jobs_cur, rec_jobs_cur, send_time_cur = get_results_resonse()
-        columns = ['srcjob_id', 'recjob_id', 'send_time']
-        sparkDF = spark.createDataFrame(zip(src_jobs_cur, rec_jobs_cur, send_time_cur), columns)
+        #src_jobs_cur, rec_jobs_cur, send_time_cur = get_results_resonse()
+        rec_jobs_cur, send_time_cur = get_results_resonse()
+        #columns = ['srcjob_id', 'recjob_id', 'send_time']
+        columns = ['recjob_id', 'send_time']
+        #sparkDF = spark.createDataFrame(zip(src_jobs_cur, rec_jobs_cur, send_time_cur), columns)
+        sparkDF = spark.createDataFrame(zip(rec_jobs_cur, send_time_cur), columns)
         sparkDF = sparkDF.dropDuplicates()
         if i==0:
             #destn_tbl = f"dataservices_test.qqq_get_rec_jobs_new_relic"

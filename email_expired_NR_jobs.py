@@ -42,8 +42,57 @@ def html_part_data(title, df):
     <p>"""
     return html
 
-sc = SparkContext(conf=SparkConf().setAppName('DS-check-expired-NR-jobs-vs-Hive-email'))
+sc = SparkContext(conf=SparkConf().setAppName('DS-check-expired-NR-jobs-vs-Hive-email').set("spark.sql.crossJoin.enabled", "true"))
 sqlContext = HiveContext(sc)
+
+sql = """
+set hive.mapred.mode=nonstrict
+"""
+df = sqlContext.sql(sql)
+
+sql = f"""
+with t1 as 
+(select count(distinct recjob_id) as total_rec_jobs from {db}.qqq_get_rec_jobs_new_relic_gbr_scale_ten),
+t2 as 
+(select count(distinct recjob_id) as expired_rec_jobs from {db}.qqq_check_rec_jobs_new_relic_gbr_scale_ten)
+select total_rec_jobs, expired_rec_jobs, round(expired_rec_jobs/total_rec_jobs*100,4) as `expired_rate(%)` from 
+t1,t2
+"""
+df = sqlContext.sql(sql).toPandas()
+email_text = html_part_data('2 hours example for expired rate for NR jobs, GBR SCALE TEN', df)
+
+sql = f"""
+with t1 as 
+(select count(distinct recjob_id) as total_rec_jobs from {db}.qqq_get_rec_jobs_new_relic_gbr_mix_a),
+t2 as 
+(select count(distinct recjob_id) as expired_rec_jobs from {db}.qqq_check_rec_jobs_new_relic_gbr_mix_a)
+select total_rec_jobs, expired_rec_jobs, round(expired_rec_jobs/total_rec_jobs*100,4) as `expired_rate(%)` from 
+t1,t2
+"""
+df = sqlContext.sql(sql).toPandas()
+email_text += html_part_data('2 hours example for expired rate for NR jobs, GBR MIX A', df)
+
+sql = f"""
+with t1 as 
+(select count(distinct recjob_id) as total_rec_jobs from {db}.qqq_get_rec_jobs_new_relic_gbr_mix_b),
+t2 as 
+(select count(distinct recjob_id) as expired_rec_jobs from {db}.qqq_check_rec_jobs_new_relic_gbr_mix_b)
+select total_rec_jobs, expired_rec_jobs, round(expired_rec_jobs/total_rec_jobs*100,4) as `expired_rate(%)` from 
+t1,t2
+"""
+df = sqlContext.sql(sql).toPandas()
+email_text += html_part_data('2 hours example for expired rate for NR jobs, GBR MIX B', df)
+
+sql = f"""
+with t1 as 
+(select count(distinct recjob_id) as total_rec_jobs from {db}.qqq_get_rec_jobs_new_relic_gbr_mix_c),
+t2 as 
+(select count(distinct recjob_id) as expired_rec_jobs from {db}.qqq_check_rec_jobs_new_relic_gbr_mix_c)
+select total_rec_jobs, expired_rec_jobs, round(expired_rec_jobs/total_rec_jobs*100,4) as `expired_rate(%)` from 
+t1,t2
+"""
+df = sqlContext.sql(sql).toPandas()
+email_text += html_part_data('2 hours example for expired rate for NR jobs, GBR MIX C', df)
 
 sql = f"""
 select * from {db}.qqq_check_rec_jobs_new_relic_gbr_scale_ten
@@ -51,7 +100,7 @@ limit 10
 """
 
 df = sqlContext.sql(sql).toPandas()
-email_text = html_part_data('2 hours example for expired NR jobs GBR SCALE TEN', df)
+email_text += html_part_data('2 hours example for expired NR jobs GBR SCALE TEN', df)
 
 sql = f"""
 select * from {db}.qqq_check_rec_jobs_new_relic_gbr_mix_a
